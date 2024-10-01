@@ -6,6 +6,10 @@ const app = express();
 
 const prisma = new PrismaClient();
 
+app.get("/", (req, res) => {
+  res.send("Welcome to the API!");
+});
+
 app.use(express.json());
 app.use(cors());
 
