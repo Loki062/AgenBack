@@ -12,11 +12,12 @@ model User {
   name String
 }
 
-model Appointments {
-  id          String   @id @default(cuid())
+model Appointment {
+  id          Int      @id @default(autoincrement())
   name        String
+  room        String
   inital_date DateTime
   final_Date  DateTime
-  room        String
-  created_at  DateTime @default(now())
+
+ @@map("Appointment")
 }
