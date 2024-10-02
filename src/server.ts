@@ -53,7 +53,7 @@ app.post('/create-appointments', [
 });
 
 // Endpoint para obter todos os agendamentos
-app.get("/Appointments", async (req: Request, res: Response): Promise<void> => {
+app.get("/Appointment", async (req: Request, res: Response): Promise<void> => {
   try {
     const bookings = await prisma.appointment.findMany();
     res.json(bookings);
