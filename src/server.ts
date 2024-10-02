@@ -74,6 +74,7 @@ app.post('/create-appointments', [
   }
 });
 
+
 // Endpoint para obter todos os agendamentos
 app.get("/Appointment", async (req: Request, res: Response): Promise<void> => {
   try {
@@ -82,8 +83,8 @@ app.get("/Appointment", async (req: Request, res: Response): Promise<void> => {
     // Formatar as datas antes de enviar a resposta
     const formattedBookings = bookings.map(booking => ({
       ...booking,
-      inital_date: booking.inital_date.toLocaleString(), // Formatar data de início
-      final_Date: booking.final_Date.toLocaleString(),   // Formatar data de término
+      inital_date: new Date(booking.inital_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
+      final_Date: new Date(booking.final_Date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
     }));
 
     res.json(formattedBookings);
@@ -92,6 +93,7 @@ app.get("/Appointment", async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ error: "Erro ao buscar agendamentos" });
   }
 });
+
 
 const port = 3333;
 
