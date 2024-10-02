@@ -36,6 +36,28 @@ app.post('/create-appointments', [
   const { name, room, inital_date, final_Date } = req.body;
 
   try {
+    // Verificar se já existe um agendamento que conflita
+    const conflictingAppointments = await prisma.appointment.findMany({
+      where: {
+        room: room,
+        OR: [
+          {
+            inital_date: {
+              lte: new Date(final_Date), // Início menor ou igual ao término do novo agendamento
+            },
+            final_Date: {
+              gte: new Date(inital_date), // Término maior ou igual ao início do novo agendamento
+            },
+          },
+        ],
+      },
+    });
+
+    if (conflictingAppointments.length > 0) {
+      res.status(400).json({ error: "Já existe um agendamento para essa sala no horário selecionado." });
+      return;
+    }
+
     const newAppointment = await prisma.appointment.create({
       data: {
         name,
@@ -56,7 +78,15 @@ app.post('/create-appointments', [
 app.get("/Appointment", async (req: Request, res: Response): Promise<void> => {
   try {
     const bookings = await prisma.appointment.findMany();
-    res.json(bookings);
+
+    // Formatar as datas antes de enviar a resposta
+    const formattedBookings = bookings.map(booking => ({
+      ...booking,
+      inital_date: booking.inital_date.toLocaleString(), // Formatar data de início
+      final_Date: booking.final_Date.toLocaleString(),   // Formatar data de término
+    }));
+
+    res.json(formattedBookings);
   } catch (error) {
     console.error("Erro ao buscar agendamentos:", error);
     res.status(500).json({ error: "Erro ao buscar agendamentos" });
