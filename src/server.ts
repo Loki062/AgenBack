@@ -10,6 +10,14 @@ const prisma = new PrismaClient();
 app.use(express.json());
 app.use(cors());
 
+// Função para formatar a data
+const formatDate = (date: string) => {
+  const dateObj = new Date(date);
+  const hours = dateObj.getUTCHours().toString().padStart(2, '0'); // Hora em UTC
+  const minutes = dateObj.getUTCMinutes().toString().padStart(2, '0'); // Minutos em UTC
+  return `${hours}:${minutes}`; // Formato HH:mm
+};
+
 // Endpoint para a raiz
 app.get("/", (req: Request, res: Response): void => {
   res.send("Welcome to the API!");
@@ -74,26 +82,35 @@ app.post('/create-appointments', [
   }
 });
 
-
 // Endpoint para obter todos os agendamentos
 app.get("/Appointment", async (req: Request, res: Response): Promise<void> => {
   try {
     const bookings = await prisma.appointment.findMany();
 
     // Formatar as datas antes de enviar a resposta
-    const formattedBookings = bookings.map(booking => ({
-      ...booking,
-      inital_date: new Date(booking.inital_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
-      final_Date: new Date(booking.final_Date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
-    }));
+    const loadedBookings: { [key: string]: any[] } = {};
 
-    res.json(formattedBookings);
+    bookings.forEach((booking: any) => {
+      const day = new Date(booking.inital_date).getDate().toString(); // Obter o dia do mês
+
+      if (!loadedBookings[day]) {
+        loadedBookings[day] = [];
+      }
+
+      loadedBookings[day].push({
+        name: booking.name,
+        room: booking.room,
+        inital_date: formatDate(booking.inital_date),
+        final_Date: formatDate(booking.final_Date),
+      });
+    });
+
+    res.json(loadedBookings);
   } catch (error) {
     console.error("Erro ao buscar agendamentos:", error);
     res.status(500).json({ error: "Erro ao buscar agendamentos" });
   }
 });
-
 
 const port = 3333;
 
